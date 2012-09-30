@@ -48,7 +48,7 @@ define atlassian::jira::setup (
   }
 
   exec { "atlassian-jira-setup-start":
-    command => "chown -R jira: /opt/atlassian/jira && curl https://raw.github.com/gist/3805534/e12c82003bd4c0862c171f48badb54fc5f28cc76/jira > /etc/init.d/jira && chmod +x /etc/init.d/jira && chkconfig --add jira",
+    command => "chown -R jira: /opt/atlassian/jira && curl https://raw.github.com/gist/3805534/jira > /etc/init.d/jira && chmod +x /etc/init.d/jira && chkconfig --add jira",
     require => Exec["atlassian-jira-setup-mv"]
   }
 
