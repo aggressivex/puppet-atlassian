@@ -10,8 +10,8 @@ define atlassian::jira::setup (
   $boot         = true,
   $status       = 'running',
   $version      = '5.1.5',
-  $firewall     = false,
-  $firewallPort = '8082',
+  $firewall     = 'iptables',
+  $firewallPort = '8080',
 ) {
 
   include conf
@@ -53,12 +53,9 @@ define atlassian::jira::setup (
   }
 
   exec { "atlassian-jira-home-env":
-    command => "echo JIRA_HOME=\"/opt/atlassian/jira/current\" >> /etc/environment && export JIRA_HOME=/opt/atlassian/jira/current/home",
+    command => "echo JIRA_HOME=\"/opt/atlassian/jira/current/home\" >> /etc/environment && export JIRA_HOME=/opt/atlassian/jira/current/home",
   }
 
-  #
-  # Install and setup mysql for jira
-  #
   if ($defaultSetup['setup-mysql']) {
     include mysql
 
@@ -87,25 +84,22 @@ define atlassian::jira::setup (
     }
   }
 
-  # sh start-jira.sh -fg
-  # 
-  # case $firewall {
-  #   csf: {
-  #     csf::port::open {'webmin-firewall-csf-open':
-  #       port => $port
-  #     }
-  #   }
-  #   iptables: {
-  #     exec { "webmin-firewall-iptables-add":
-  #       command => "iptables -I INPUT 5 -p tcp --dport ${firewallPort} -j ACCEPT",
-  #       path    => "/usr/local/bin/:/bin/:/usr/bin/:/usr/sbin:/sbin/",
-  #       require => Package["webmin"]
-  #     }
-  #     exec { "webmin-firewall-iptables-save":
-  #       command => "service iptables save",
-  #       path    => "/usr/local/bin/:/bin/:/usr/bin/:/usr/sbin:/sbin/",
-  #       require => Exec["webmin-firewall-iptables-add"]
-  #     }
-  #   }
-  # }
+  case $firewall {
+    csf: {
+      csf::port::open {'jira-firewall-csf-open':
+        port => $port
+      }
+    }
+    iptables: {
+      exec { "jira-firewall-iptables-add":
+        command => "iptables -I INPUT 5 -p tcp --dport ${firewallPort} -j ACCEPT",
+        path    => "/usr/local/bin/:/bin/:/usr/bin/:/usr/sbin:/sbin/",
+      }
+      exec { "jira-firewall-iptables-save":
+        command => "service iptables save",
+        path    => "/usr/local/bin/:/bin/:/usr/bin/:/usr/sbin:/sbin/",
+        require => Exec["jira-firewall-iptables-add"]
+      }
+    }
+  }
 }
