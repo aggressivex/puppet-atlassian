@@ -54,6 +54,7 @@ define atlassian::jira::setup (
 
   exec { "atlassian-jira-home-env":
     command => "echo JIRA_HOME=\"/opt/atlassian/jira/current/home\" >> /etc/environment && export JIRA_HOME=/opt/atlassian/jira/current/home",
+    require => Exec["atlassian-jira-setup-start"]
   }
 
   if ($defaultSetup['setup-mysql']) {
